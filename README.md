@@ -1,9 +1,7 @@
 # Webserver
 Supersimple Python webserver on sockets.
 
-Supported platforms:
--Windows 10
--Debian 9
+Supported platforms: Windows 10, Debian 9
 
 Example usage:
 1. Download repo.
