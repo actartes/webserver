@@ -8,14 +8,23 @@ import configparser
 config = configparser.ConfigParser()
 config.read("config.ini")
 
-DEBUG_MODE = config["Server"]["DEBUG_MODE"]
+DEBUG_MODE = config.getboolean("Server", "DEBUG_MODE")
 TIMEOUT = config.getint("Server", "TIMEOUT")
 HOST = config["Server"]["HOST"]
 PORT = config.getint("Server", "PORT")
-
-
 serv_addr = (HOST, PORT)
 
+# Form data to send
+with open("index.html", "r") as f:
+    response_body = f.read()
+    response_body_raw = str(response_body + "\n").encode("utf-8")
+        
+    response_headers = {"Content-Type": "text/html; charset=utf-8",
+                        "Content-Length": str(len(response_body_raw)),
+                        "Connection": "close"}
+    response_headers_raw = ""
+    for k, v in response_headers.items():
+        response_headers_raw += "{}: {}\n".format(k, v)
 
 while True:
     s = socket.socket(socket.AF_INET)
@@ -46,21 +55,6 @@ while True:
         # Here we need to stop listening and send something.
         if data[-4:] == b'\r\n\r\n':
             break
-
-    # Form data to send
-    with open("index.html", "r") as f:
-        response_body = f.read()
-        response_body_raw = str(response_body + "\n").encode("utf-8")
-    
-    if DEBUG_MODE == True:
-        print(response_body)
-        
-    response_headers = {"Content-Type": "text/html; charset=utf-8",
-                        "Content-Length": str(len(response_body_raw)),
-                        "Connection": "close"}
-    response_headers_raw = ""
-    for k, v in response_headers.items():
-        response_headers_raw += "{}: {}\n".format(k, v)
     
     client_conn.send("HTTP/1.1 200 OK\n".encode())
     client_conn.send(response_headers_raw.encode())
