@@ -16,10 +16,7 @@ PORT = config.getint("Server", "PORT")
 
 serv_addr = (HOST, PORT)
 
-# Line below is for Windows / Python >3.10
-#s = socket.create_server(serv_addr, family=socket.AF_INET)
 
-#TODO: cycle socket creating
 while True:
     s = socket.socket(socket.AF_INET)
     s.bind(serv_addr)
@@ -50,21 +47,24 @@ while True:
         if data[-4:] == b'\r\n\r\n':
             break
 
+    # Form data to send
     with open("index.html", "r") as f:
         response_body = f.read()
         response_body_raw = str(response_body + "\n").encode("utf-8")
     
-        if DEBUG_MODE == True:
-            print(response_body)
+    if DEBUG_MODE == True:
+        print(response_body)
         
-    
-    #TODO: define response headers in python structure
-    response_headers = "Content-Type: text/html; charset=utf-8\nContent-Length: {}\nConnection: close".format(str(len(response_body_raw)))
-    response_headers_raw = response_headers.encode()
+    response_headers = {"Content-Type": "text/html; charset=utf-8",
+                        "Content-Length": str(len(response_body_raw)),
+                        "Connection": "close"}
+    response_headers_raw = ""
+    for k, v in response_headers.items():
+        response_headers_raw += "{}: {}\n".format(k, v)
     
     client_conn.send("HTTP/1.1 200 OK\n".encode())
-    client_conn.send(response_headers_raw)
-    client_conn.send("\n\n".encode())
+    client_conn.send(response_headers_raw.encode())
+    client_conn.send("\n".encode())
     client_conn.send(response_body_raw)
     client_conn.close()
     s.close()
